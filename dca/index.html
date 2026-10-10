@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VOO / QQQM 定投跟踪</title>
+<title>简单致富之百万定投</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--ink:#1b2434;--mut:#6b7686;--line:#e8edf3;--blue:#1F4E78;--red:#c62828;--grn:#178a4c}
@@ -34,7 +34,7 @@ thead th:first-child{border-top-left-radius:11px}
 thead th:last-child{border-top-right-radius:11px}
 tbody td{padding:11px 10px;border-bottom:1px solid #eef1f5;text-align:right;white-space:nowrap;
   font-variant-numeric:tabular-nums;color:#2a3547;font-size:14px}
-#indextab th,#indextab td,#sumtab th,#sumtab td{text-align:center}
+#indextab th,#indextab td,#sumtab th,#sumtab td,#buytab th,#buytab td{text-align:center}
 table.detail thead th{text-align:right}
 table.detail thead th:first-child{text-align:center}
 tbody td.lbl,tbody th:first-child{text-align:center}
@@ -75,15 +75,43 @@ section.news{border-left:4px solid #f0ad4e}
 .newslist li:before{content:"▸";position:absolute;left:7px;color:#e8962e;font-weight:800}
 .newslist li b{color:#1b2434}
 .newssrc{font-size:11.5px;color:#9aa5b5;margin-top:10px;line-height:1.6}
+section.quote{background:linear-gradient(135deg,#fffdf6,#fff9ea);border:1px solid #f0e2b6;
+  border-left:4px solid #e8b93c}
+.quote .qmark{font-size:30px;color:#e8b93c;line-height:1;margin-bottom:6px}
+.quote .qtext{font-size:15.5px;line-height:1.9;color:#1b2434;font-weight:600}
+.quote .qtext .en{display:block;font-weight:400;font-size:13px;color:#6b7686;margin-top:6px;line-height:1.7}
+.quote .qauthor{text-align:right;font-size:12.5px;color:#9a8a5a;margin-top:10px;letter-spacing:.5px}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{flex:0 0 auto;filter:drop-shadow(0 2px 5px rgba(0,0,0,.3))}
 footer{text-align:center;color:#9aa5b5;font-size:12px;margin:22px 0 10px;letter-spacing:.5px}
 @media(max-width:560px){header.top h1{font-size:19px}tbody td{font-size:13px}}
 </style>
 </head>
 <body id="top">
 <header class="top">
-  <h1>VOO / QQQM 定投跟踪</h1>
-  <div class="sub">每周六更新（中国时间） · 数据截至 <span id="upd"></span> · 投入为 IBKR 实际成交记录</div>
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 48 48" width="46" height="46" aria-hidden="true">
+      <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#3a7ab5"/><stop offset="1" stop-color="#173f63"/>
+      </linearGradient></defs>
+      <rect x="1.5" y="1.5" width="45" height="45" rx="13" fill="url(#lg)"/>
+      <path d="M10 33 L19 25 L24 29 L37 15" stroke="#ffffff" stroke-width="3.6" fill="none"
+            stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M29.5 15 h7.5 v7.5" stroke="#FFD76A" stroke-width="3.6" fill="none"
+            stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="10" cy="33" r="2.8" fill="#FFD76A"/>
+    </svg>
+    <div>
+      <h1>简单致富之百万定投</h1>
+      <div class="sub">VOO / QQQM 定投跟踪 · 每周六更新（中国时间） · 数据截至 <span id="upd"></span> · 投入为实际成交记录</div>
+    </div>
+  </div>
 </header>
+<section class="quote">
+  <div class="qmark">❝</div>
+  <div class="qtext"><span id="quote-zh"></span><span class="en" id="quote-en"></span></div>
+  <div class="qauthor" id="quote-by"></div>
+</section>
 <nav class="quick">
   <a href="#idx">指数涨跌</a><a href="#dca">定投总览</a><a href="#news">市场要点</a>
   <a href="#combo">组合收益</a><a href="#voo">VOO</a><a href="#qqqm">QQQM</a>
@@ -93,6 +121,11 @@ footer{text-align:center;color:#9aa5b5;font-size:12px;margin:22px 0 10px;letter-
 <section id="idx">
   <div class="sec-head"><h3>指数本周涨跌</h3><span class="dim">10月2日收盘 → 10月9日收盘</span></div>
   <div class="wrap"><table id="indextab"></table></div>
+</section>
+
+<section id="buy">
+  <div class="sec-head"><h3>本周投入</h3><span class="dim">最近确认买入 · 10月7日当周待结算确认后更新</span></div>
+  <div class="wrap"><table id="buytab"></table></div>
 </section>
 
 <section id="dca">
@@ -158,15 +191,58 @@ footer{text-align:center;color:#9aa5b5;font-size:12px;margin:22px 0 10px;letter-
   · 本页面仅为个人记账，不构成投资建议。
   </div>
 </section>
-<footer>VOO / QQQM DCA TRACKER</footer>
+<footer>简单致富之百万定投 · VOO / QQQM DCA</footer>
 <script>
-const DATA = {"updated": "2026-10-10", "voo": {"ticker": "VOO", "rows": [{"d": "2026-05-23", "w": 100.97, "c": 1437.19, "q": 2.3675, "p": 685.55, "v": 1623.04, "div": 0.0, "pf": 185.85, "r": 0.1293, "wk": 1522.07, "wkr": 0}, {"d": "2026-05-30", "w": 101.0, "c": 1538.19, "q": 2.5125, "p": 695.49, "v": 1747.42, "div": 0.0, "pf": 209.23, "r": 0.136, "wk": 23.38, "wkr": 0.0144}, {"d": "2026-06-06", "w": 100.95, "c": 1639.14, "q": 2.6561, "p": 678, "v": 1800.84, "div": 0.0, "pf": 161.69, "r": 0.0986, "wk": -47.53, "wkr": -0.0272}, {"d": "2026-06-13", "w": 101.0, "c": 1740.14, "q": 2.8027, "p": 681.95, "v": 1911.3, "div": 0.0, "pf": 171.16, "r": 0.0984, "wk": 9.47, "wkr": 0.0053}, {"d": "2026-06-20", "w": 100.95, "c": 1841.09, "q": 2.9468, "p": 688.11, "v": 2027.72, "div": 0.0, "pf": 186.63, "r": 0.1014, "wk": 15.47, "wkr": 0.0081}, {"d": "2026-06-27", "w": 100.94, "c": 1942.04, "q": 3.0922, "p": 670.26, "v": 2072.58, "div": 0.0, "pf": 130.54, "r": 0.0672, "wk": -56.09, "wkr": -0.0277}, {"d": "2026-07-04", "w": 100.99, "c": 2043.02, "q": 3.2396, "p": 684.84, "v": 2218.61, "div": 0.0, "pf": 175.58, "r": 0.0859, "wk": 45.04, "wkr": 0.0217}, {"d": "2026-07-11", "w": 100.96, "c": 2143.98, "q": 3.3845, "p": 693.86, "v": 2348.37, "div": 0.0, "pf": 204.39, "r": 0.0953, "wk": 28.81, "wkr": 0.013}, {"d": "2026-07-18", "w": 100.97, "c": 2244.95, "q": 3.5293, "p": 683.17, "v": 2411.11, "div": 0.0, "pf": 166.16, "r": 0.074, "wk": -38.23, "wkr": -0.0163}, {"d": "2026-07-25", "w": 100.96, "c": 2345.91, "q": 3.6753, "p": 679.14, "v": 2496.04, "div": 0.0, "pf": 150.13, "r": 0.064, "wk": -16.03, "wkr": -0.0066}, {"d": "2026-08-01", "w": 100.98, "c": 2446.9, "q": 3.8223, "p": 686.65, "v": 2624.58, "div": 0.0, "pf": 177.68, "r": 0.0726, "wk": 27.55, "wkr": 0.011}, {"d": "2026-08-08", "w": 150.98, "c": 2597.88, "q": 4.0384, "p": 710.71, "v": 2870.13, "div": 0.0, "pf": 272.25, "r": 0.1048, "wk": 94.57, "wkr": 0.036}, {"d": "2026-08-15", "w": 0.0, "c": 2597.88, "q": 4.0384, "p": 713.61, "v": 2881.84, "div": 0.0, "pf": 283.96, "r": 0.1093, "wk": 11.71, "wkr": 0.0041}, {"d": "2026-08-22", "w": 0.0, "c": 2597.88, "q": 4.0384, "p": 703.71, "v": 2841.86, "div": 0.0, "pf": 243.98, "r": 0.0939, "wk": -39.98, "wkr": -0.0139}, {"d": "2026-08-29", "w": 0.0, "c": 2597.88, "q": 4.0384, "p": 707.24, "v": 2856.12, "div": 0.0, "pf": 258.24, "r": 0.0994, "wk": 14.26, "wkr": 0.005}, {"d": "2026-09-05", "w": 0.0, "c": 2597.88, "q": 4.0384, "p": 708.01, "v": 2859.23, "div": 0.0, "pf": 261.35, "r": 0.1006, "wk": 3.11, "wkr": 0.0011}, {"d": "2026-09-12", "w": 601.88, "c": 3199.76, "q": 4.8897, "p": 702.56, "v": 3435.31, "div": 0.0, "pf": 235.54, "r": 0.0736, "wk": -25.8, "wkr": -0.009}, {"d": "2026-09-19", "w": 101.0, "c": 3300.76, "q": 5.033, "p": 701.78, "v": 3532.06, "div": 0.0, "pf": 231.3, "r": 0.0701, "wk": -4.25, "wkr": -0.0012}, {"d": "2026-09-26", "w": 100.99, "c": 3401.75, "q": 5.1741, "p": 710.79, "v": 3677.7, "div": 0.0, "pf": 275.95, "r": 0.0811, "wk": 44.65, "wkr": 0.0126}, {"d": "2026-10-03", "w": 100.97, "c": 3502.72, "q": 5.3158, "p": 707.54, "v": 3761.14, "div": 0.94, "pf": 259.36, "r": 0.074, "wk": -17.53, "wkr": -0.0048}, {"d": "2026-10-10", "w": 0.0, "c": 3502.72, "q": 5.3158, "p": 715.59, "v": 3803.93, "div": 0.94, "pf": 302.15, "r": 0.0863, "wk": 42.79, "wkr": 0.0114}]}, "qqqm": {"ticker": "QQQM", "rows": [{"d": "2026-05-23", "w": 101.0, "c": 101.0, "q": 0.3444, "p": 295.44, "v": 101.75, "div": 0.0, "pf": 0.75, "r": 0.0075, "wk": 0.75, "wkr": 0}, {"d": "2026-05-30", "w": 100.98, "c": 201.98, "q": 0.6777, "p": 303.96, "v": 205.99, "div": 0.0, "pf": 4.02, "r": 0.0199, "wk": 3.26, "wkr": 0.0321}, {"d": "2026-06-06", "w": 100.99, "c": 302.96, "q": 1.0054, "p": 290.35, "v": 291.92, "div": 0.0, "pf": -11.05, "r": -0.0365, "wk": -15.06, "wkr": -0.0731}, {"d": "2026-06-13", "w": 100.99, "c": 403.95, "q": 1.3437, "p": 297.01, "v": 399.09, "div": 0.0, "pf": -4.86, "r": -0.012, "wk": 6.19, "wkr": 0.0212}, {"d": "2026-06-20", "w": 100.99, "c": 504.94, "q": 1.6708, "p": 304.52, "v": 508.79, "div": 0.0, "pf": 3.85, "r": 0.0076, "wk": 8.71, "wkr": 0.0218}, {"d": "2026-06-27", "w": 100.98, "c": 605.92, "q": 1.9997, "p": 290.95, "v": 581.81, "div": 0.0, "pf": -24.11, "r": -0.0398, "wk": -27.96, "wkr": -0.055}, {"d": "2026-07-04", "w": 100.97, "c": 706.89, "q": 2.3376, "p": 293.42, "v": 685.9, "div": 0.0, "pf": -20.99, "r": -0.0297, "wk": 3.11, "wkr": 0.0054}, {"d": "2026-07-11", "w": 100.98, "c": 807.87, "q": 2.6732, "p": 298.72, "v": 798.54, "div": 0.0, "pf": -9.33, "r": -0.0116, "wk": 11.66, "wkr": 0.017}, {"d": "2026-07-18", "w": 101.0, "c": 908.87, "q": 3.0133, "p": 286.31, "v": 862.74, "div": 0.0, "pf": -46.13, "r": -0.0508, "wk": -36.8, "wkr": -0.0461}, {"d": "2026-07-25", "w": 100.97, "c": 1009.84, "q": 3.36, "p": 281.68, "v": 946.44, "div": 0.0, "pf": -63.4, "r": -0.0628, "wk": -17.26, "wkr": -0.02}, {"d": "2026-08-01", "w": 101.0, "c": 1110.84, "q": 3.7199, "p": 283.29, "v": 1053.81, "div": 0.0, "pf": -57.03, "r": -0.0513, "wk": 6.37, "wkr": 0.0067}, {"d": "2026-08-08", "w": 150.98, "c": 1261.83, "q": 4.2435, "p": 297.7, "v": 1263.29, "div": 0.0, "pf": 1.46, "r": 0.0012, "wk": 58.5, "wkr": 0.0555}, {"d": "2026-08-15", "w": 0.0, "c": 1261.83, "q": 4.2435, "p": 301.01, "v": 1277.34, "div": 0.0, "pf": 15.51, "r": 0.0123, "wk": 14.05, "wkr": 0.0111}, {"d": "2026-08-22", "w": 0.0, "c": 1261.83, "q": 4.2435, "p": 293.76, "v": 1246.57, "div": 0.0, "pf": -15.26, "r": -0.0121, "wk": -30.77, "wkr": -0.0241}, {"d": "2026-08-29", "w": 0.0, "c": 1261.83, "q": 4.2435, "p": 295, "v": 1251.83, "div": 0.0, "pf": -9.99, "r": -0.0079, "wk": 5.26, "wkr": 0.0042}, {"d": "2026-09-05", "w": 0.0, "c": 1261.83, "q": 4.2435, "p": 296.07, "v": 1256.37, "div": 0.0, "pf": -5.45, "r": -0.0043, "wk": 4.54, "wkr": 0.0036}, {"d": "2026-09-12", "w": 601.98, "c": 1863.81, "q": 6.2713, "p": 294.39, "v": 1846.21, "div": 0.0, "pf": -17.6, "r": -0.0094, "wk": -12.14, "wkr": -0.0097}, {"d": "2026-09-19", "w": 100.98, "c": 1964.78, "q": 6.6139, "p": 296.91, "v": 1963.73, "div": 0.0, "pf": -1.05, "r": -0.0005, "wk": 16.55, "wkr": 0.009}, {"d": "2026-09-26", "w": 100.99, "c": 2065.78, "q": 6.9416, "p": 306.54, "v": 2127.88, "div": 0.0, "pf": 62.1, "r": 0.0301, "wk": 63.15, "wkr": 0.0322}, {"d": "2026-10-03", "w": 100.98, "c": 2166.76, "q": 7.2683, "p": 308.69, "v": 2243.65, "div": 0.0, "pf": 76.89, "r": 0.0355, "wk": 14.79, "wkr": 0.007}, {"d": "2026-10-10", "w": 0.0, "c": 2166.76, "q": 7.2683, "p": 309.39, "v": 2248.74, "div": 0.0, "pf": 81.98, "r": 0.0378, "wk": 5.09, "wkr": 0.0023}]}, "index": [{"label": "标普500", "prev": 707.54, "curr": 715.59, "chg": 0.0114}, {"label": "纳斯达克100", "prev": 308.69, "curr": 309.39, "chg": 0.0023}]};
+const DATA = {"updated": "2026-10-10", "voo": {"ticker": "VOO", "rows": [{"d": "2026-05-23", "w": 100.97, "c": 1437.19, "q": 2.3675, "p": 685.55, "v": 1623.04, "div": 0.0, "pf": 185.85, "r": 0.1293, "wk": 1522.07, "wkr": 0}, {"d": "2026-05-30", "w": 101.0, "c": 1538.19, "q": 2.5125, "p": 695.49, "v": 1747.42, "div": 0.0, "pf": 209.23, "r": 0.136, "wk": 23.38, "wkr": 0.0144}, {"d": "2026-06-06", "w": 100.95, "c": 1639.14, "q": 2.6561, "p": 678, "v": 1800.84, "div": 0.0, "pf": 161.69, "r": 0.0986, "wk": -47.53, "wkr": -0.0272}, {"d": "2026-06-13", "w": 101.0, "c": 1740.14, "q": 2.8027, "p": 681.95, "v": 1911.3, "div": 0.0, "pf": 171.16, "r": 0.0984, "wk": 9.47, "wkr": 0.0053}, {"d": "2026-06-20", "w": 100.95, "c": 1841.09, "q": 2.9468, "p": 688.11, "v": 2027.72, "div": 0.0, "pf": 186.63, "r": 0.1014, "wk": 15.47, "wkr": 0.0081}, {"d": "2026-06-27", "w": 100.94, "c": 1942.04, "q": 3.0922, "p": 670.26, "v": 2072.58, "div": 0.0, "pf": 130.54, "r": 0.0672, "wk": -56.09, "wkr": -0.0277}, {"d": "2026-07-04", "w": 100.99, "c": 2043.02, "q": 3.2396, "p": 684.84, "v": 2218.61, "div": 0.0, "pf": 175.58, "r": 0.0859, "wk": 45.04, "wkr": 0.0217}, {"d": "2026-07-11", "w": 100.96, "c": 2143.98, "q": 3.3845, "p": 693.86, "v": 2348.37, "div": 0.0, "pf": 204.39, "r": 0.0953, "wk": 28.81, "wkr": 0.013}, {"d": "2026-07-18", "w": 100.97, "c": 2244.95, "q": 3.5293, "p": 683.17, "v": 2411.11, "div": 0.0, "pf": 166.16, "r": 0.074, "wk": -38.23, "wkr": -0.0163}, {"d": "2026-07-25", "w": 100.96, "c": 2345.91, "q": 3.6753, "p": 679.14, "v": 2496.04, "div": 0.0, "pf": 150.13, "r": 0.064, "wk": -16.03, "wkr": -0.0066}, {"d": "2026-08-01", "w": 100.98, "c": 2446.9, "q": 3.8223, "p": 686.65, "v": 2624.58, "div": 0.0, "pf": 177.68, "r": 0.0726, "wk": 27.55, "wkr": 0.011}, {"d": "2026-08-08", "w": 150.98, "c": 2597.88, "q": 4.0384, "p": 710.71, "v": 2870.13, "div": 0.0, "pf": 272.25, "r": 0.1048, "wk": 94.57, "wkr": 0.036}, {"d": "2026-08-15", "w": 0.0, "c": 2597.88, "q": 4.0384, "p": 713.61, "v": 2881.84, "div": 0.0, "pf": 283.96, "r": 0.1093, "wk": 11.71, "wkr": 0.0041}, {"d": "2026-08-22", "w": 0.0, "c": 2597.88, "q": 4.0384, "p": 703.71, "v": 2841.86, "div": 0.0, "pf": 243.98, "r": 0.0939, "wk": -39.98, "wkr": -0.0139}, {"d": "2026-08-29", "w": 0.0, "c": 2597.88, "q": 4.0384, "p": 707.24, "v": 2856.12, "div": 0.0, "pf": 258.24, "r": 0.0994, "wk": 14.26, "wkr": 0.005}, {"d": "2026-09-05", "w": 0.0, "c": 2597.88, "q": 4.0384, "p": 708.01, "v": 2859.23, "div": 0.0, "pf": 261.35, "r": 0.1006, "wk": 3.11, "wkr": 0.0011}, {"d": "2026-09-12", "w": 601.88, "c": 3199.76, "q": 4.8897, "p": 702.56, "v": 3435.31, "div": 0.0, "pf": 235.54, "r": 0.0736, "wk": -25.8, "wkr": -0.009}, {"d": "2026-09-19", "w": 101.0, "c": 3300.76, "q": 5.033, "p": 701.78, "v": 3532.06, "div": 0.0, "pf": 231.3, "r": 0.0701, "wk": -4.25, "wkr": -0.0012}, {"d": "2026-09-26", "w": 100.99, "c": 3401.75, "q": 5.1741, "p": 710.79, "v": 3677.7, "div": 0.0, "pf": 275.95, "r": 0.0811, "wk": 44.65, "wkr": 0.0126}, {"d": "2026-10-03", "w": 100.97, "c": 3502.72, "q": 5.3158, "p": 707.54, "v": 3761.14, "div": 0.94, "pf": 259.36, "r": 0.074, "wk": -17.53, "wkr": -0.0048}, {"d": "2026-10-10", "w": 0.0, "c": 3502.72, "q": 5.3158, "p": 715.59, "v": 3803.93, "div": 0.94, "pf": 302.15, "r": 0.0863, "wk": 42.79, "wkr": 0.0114}]}, "qqqm": {"ticker": "QQQM", "rows": [{"d": "2026-05-23", "w": 101.0, "c": 101.0, "q": 0.3444, "p": 295.44, "v": 101.75, "div": 0.0, "pf": 0.75, "r": 0.0075, "wk": 0.75, "wkr": 0}, {"d": "2026-05-30", "w": 100.98, "c": 201.98, "q": 0.6777, "p": 303.96, "v": 205.99, "div": 0.0, "pf": 4.02, "r": 0.0199, "wk": 3.26, "wkr": 0.0321}, {"d": "2026-06-06", "w": 100.99, "c": 302.96, "q": 1.0054, "p": 290.35, "v": 291.92, "div": 0.0, "pf": -11.05, "r": -0.0365, "wk": -15.06, "wkr": -0.0731}, {"d": "2026-06-13", "w": 100.99, "c": 403.95, "q": 1.3437, "p": 297.01, "v": 399.09, "div": 0.0, "pf": -4.86, "r": -0.012, "wk": 6.19, "wkr": 0.0212}, {"d": "2026-06-20", "w": 100.99, "c": 504.94, "q": 1.6708, "p": 304.52, "v": 508.79, "div": 0.0, "pf": 3.85, "r": 0.0076, "wk": 8.71, "wkr": 0.0218}, {"d": "2026-06-27", "w": 100.98, "c": 605.92, "q": 1.9997, "p": 290.95, "v": 581.81, "div": 0.0, "pf": -24.11, "r": -0.0398, "wk": -27.96, "wkr": -0.055}, {"d": "2026-07-04", "w": 100.97, "c": 706.89, "q": 2.3376, "p": 293.42, "v": 685.9, "div": 0.0, "pf": -20.99, "r": -0.0297, "wk": 3.11, "wkr": 0.0054}, {"d": "2026-07-11", "w": 100.98, "c": 807.87, "q": 2.6732, "p": 298.72, "v": 798.54, "div": 0.0, "pf": -9.33, "r": -0.0116, "wk": 11.66, "wkr": 0.017}, {"d": "2026-07-18", "w": 101.0, "c": 908.87, "q": 3.0133, "p": 286.31, "v": 862.74, "div": 0.0, "pf": -46.13, "r": -0.0508, "wk": -36.8, "wkr": -0.0461}, {"d": "2026-07-25", "w": 100.97, "c": 1009.84, "q": 3.36, "p": 281.68, "v": 946.44, "div": 0.0, "pf": -63.4, "r": -0.0628, "wk": -17.26, "wkr": -0.02}, {"d": "2026-08-01", "w": 101.0, "c": 1110.84, "q": 3.7199, "p": 283.29, "v": 1053.81, "div": 0.0, "pf": -57.03, "r": -0.0513, "wk": 6.37, "wkr": 0.0067}, {"d": "2026-08-08", "w": 150.98, "c": 1261.83, "q": 4.2435, "p": 297.7, "v": 1263.29, "div": 0.0, "pf": 1.46, "r": 0.0012, "wk": 58.5, "wkr": 0.0555}, {"d": "2026-08-15", "w": 0.0, "c": 1261.83, "q": 4.2435, "p": 301.01, "v": 1277.34, "div": 0.0, "pf": 15.51, "r": 0.0123, "wk": 14.05, "wkr": 0.0111}, {"d": "2026-08-22", "w": 0.0, "c": 1261.83, "q": 4.2435, "p": 293.76, "v": 1246.57, "div": 0.0, "pf": -15.26, "r": -0.0121, "wk": -30.77, "wkr": -0.0241}, {"d": "2026-08-29", "w": 0.0, "c": 1261.83, "q": 4.2435, "p": 295, "v": 1251.83, "div": 0.0, "pf": -9.99, "r": -0.0079, "wk": 5.26, "wkr": 0.0042}, {"d": "2026-09-05", "w": 0.0, "c": 1261.83, "q": 4.2435, "p": 296.07, "v": 1256.37, "div": 0.0, "pf": -5.45, "r": -0.0043, "wk": 4.54, "wkr": 0.0036}, {"d": "2026-09-12", "w": 601.98, "c": 1863.81, "q": 6.2713, "p": 294.39, "v": 1846.21, "div": 0.0, "pf": -17.6, "r": -0.0094, "wk": -12.14, "wkr": -0.0097}, {"d": "2026-09-19", "w": 100.98, "c": 1964.78, "q": 6.6139, "p": 296.91, "v": 1963.73, "div": 0.0, "pf": -1.05, "r": -0.0005, "wk": 16.55, "wkr": 0.009}, {"d": "2026-09-26", "w": 100.99, "c": 2065.78, "q": 6.9416, "p": 306.54, "v": 2127.88, "div": 0.0, "pf": 62.1, "r": 0.0301, "wk": 63.15, "wkr": 0.0322}, {"d": "2026-10-03", "w": 100.98, "c": 2166.76, "q": 7.2683, "p": 308.69, "v": 2243.65, "div": 0.0, "pf": 76.89, "r": 0.0355, "wk": 14.79, "wkr": 0.007}, {"d": "2026-10-10", "w": 0.0, "c": 2166.76, "q": 7.2683, "p": 309.39, "v": 2248.74, "div": 0.0, "pf": 81.98, "r": 0.0378, "wk": 5.09, "wkr": 0.0023}]}, "index": [{"label": "标普500", "prev": 707.54, "curr": 715.59, "chg": 0.0114}, {"label": "纳斯达克100", "prev": 308.69, "curr": 309.39, "chg": 0.0023}], "recent_buys": [{"ticker": "VOO", "date": "2026-09-30", "cost": 100.97, "qty": 0.1417, "px": 712.55, "n": 16}, {"ticker": "QQQM", "date": "2026-09-30", "cost": 100.98, "qty": 0.3267, "px": 309.1, "n": 16}]};
 document.getElementById('upd').textContent = DATA.updated;
 const fmt$ = x => '$' + x.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const fmtP = x => (x>=0?'+':'') + (x*100).toFixed(2) + '%';
 const sgn$ = x => (x>=0?'+':'\u2212') + fmt$(Math.abs(x));
 const AR = '\u25B2', AD = '\u25BC', DASH = '\u2014';
 
+(function buyTab(){
+  const el = document.getElementById('buytab');
+  let h = '<thead><tr><th></th><th>投入日期</th><th>投入金额 $</th><th>买入价格 $</th><th>买入股数</th><th>至今涨跌</th><th>累计期数</th></tr></thead><tbody>';
+  DATA.recent_buys.forEach(b=>{
+    const t = DATA[b.ticker.toLowerCase()];
+    const now = t.rows[t.rows.length-1].p;
+    const chg = now / b.px - 1;
+    const c = chg >= 0 ? 'up' : 'down';
+    const md = b.date.slice(5).split('-').map(x=>parseInt(x,10));
+    h += '<tr><td class="lbl">'+b.ticker+'</td><td>'+md[0]+'月'+md[1]+'日</td><td>'+b.cost.toFixed(2)
+      +'</td><td>'+b.px.toFixed(2)+'</td><td>'+b.qty+'</td><td class="'+c+'">'+fmtP(chg)
+      +'</td><td>第'+b.n+'期</td></tr>';
+  });
+  el.innerHTML = h + '</tbody>';
+})();
+
+const QUOTES = [
+ {zh:"股市是把钱从没有耐心的人手里，转移到有耐心的人手里的装置。",en:"The stock market is a device for transferring money from the impatient to the patient.",by:"沃伦·巴菲特 Warren Buffett"},
+ {zh:"通过定期投资指数基金，一个对投资一无所知的人，实际上能跑赢大多数专业投资者。",en:"By periodically investing in an index fund, the know-nothing investor can actually outperform most investment professionals.",by:"沃伦·巴菲特 Warren Buffett"},
+ {zh:"别在干草堆里找针，直接买下整个干草堆！",en:"Don't look for the needle in the haystack. Just buy the haystack!",by:"约翰·博格 John Bogle"},
+ {zh:"时间是你的朋友，冲动是你的敌人。",en:"Time is your friend; impulse is your enemy.",by:"约翰·博格 John Bogle"},
+ {zh:"大钱不是靠买卖赚来的，而是靠等待。",en:"The big money is not in the buying and selling, but in the waiting.",by:"查理·芒格 Charlie Munger"},
+ {zh:"投资者为躲避回调而损失的钱，远多于回调本身造成的损失。",en:"Far more money has been lost by investors preparing for corrections than has been lost in corrections themselves.",by:"彼得·林奇 Peter Lynch"},
+ {zh:"聪明的投资者是现实主义者：向乐观者卖出，从悲观者手中买入。",en:"The intelligent investor is a realist who sells to optimists and buys from pessimists.",by:"本杰明·格雷厄姆 Benjamin Graham"},
+ {zh:"让我赚大钱的从来不是思考，而是静坐不动。",en:"It was never my thinking that made the big money for me. It always was my sitting.",by:"杰西·利弗莫尔 Jesse Livermore"},
+ {zh:"在别人贪婪时恐惧，在别人恐惧时贪婪。",en:"Be fearful when others are greedy, and greedy when others are fearful.",by:"沃伦·巴菲特 Warren Buffett"},
+ {zh:"你无法预测未来，但你可以为未来做好准备。",en:"You can't predict, but you can prepare.",by:"霍华德·马克斯 Howard Marks"},
+ {zh:"我们最喜欢的持有期限是：永远。",en:"Our favorite holding period is forever.",by:"沃伦·巴菲特 Warren Buffett"},
+ {zh:"买股票就是买公司，买公司就是买这家公司未来现金流的折现。",en:null,by:"段永平"},
+ {zh:"坚持到底，穿越牛熊。",en:"Stay the course.",by:"约翰·博格 John Bogle"},
+ {zh:"花得比赚得少，把结余投出去，远离负债。",en:"Spend less than you earn — invest the surplus — avoid debt.",by:"JL·柯林斯《简单致富之路》 JL Collins"}
+];
+(function quote(){
+  const d = new Date(); d.setHours(0,0,0,0);
+  d.setDate(d.getDate() + 3 - ((d.getDay()+6)%7));
+  const w1 = new Date(d.getFullYear(),0,4);
+  const wk = 1 + Math.round(((d - w1)/864e5 - 3 + ((w1.getDay()+6)%7))/7);
+  const q = QUOTES[wk % QUOTES.length];
+  document.getElementById('quote-zh').textContent = q.zh;
+  const enEl = document.getElementById('quote-en');
+  if(q.en){ enEl.textContent = q.en; } else { enEl.style.display = 'none'; }
+  document.getElementById('quote-by').textContent = '—— ' + q.by;
+})();
 (function indexTab(){
   let h = '<thead><tr><th></th><th>10月2日收盘</th><th>10月9日收盘</th><th>本周涨跌幅</th></tr></thead><tbody>';
   DATA.index.forEach(r=>{
