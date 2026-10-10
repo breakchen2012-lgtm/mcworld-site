@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VOO / QQQM 定投跟踪</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f4f6fa;color:#1a1a1a;padding:16px;max-width:860px;margin:0 auto}
+h1{font-size:22px;margin:8px 0 2px}
+.sub{color:#888;font-size:13px;margin-bottom:14px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.card{background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.card h2{font-size:15px;margin-bottom:8px}
+.card .big{font-size:22px;font-weight:700}
+.up{color:#d43f3a}.down{color:#1a9e54}
+.kv{display:flex;justify-content:space-between;font-size:13px;color:#555;margin-top:6px}
+.kv b{color:#1a1a1a}
+section{background:#fff;border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+section h3{font-size:16px;margin-bottom:10px}
+canvas{max-height:260px}
+details{margin-top:8px}
+summary{cursor:pointer;color:#1a73e8;font-size:14px;padding:6px 0}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
+th,td{border:1px solid #e5e5e5;padding:5px 4px;text-align:right;white-space:nowrap}
+th{background:#f0f4f9;position:sticky;top:0}
+td:first-child,th:first-child{text-align:center}
+.wrap{overflow-x:auto}
+.btn{display:inline-block;background:#1a73e8;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:14px;margin:4px 6px 4px 0;cursor:pointer}
+.note{font-size:12px;color:#888;line-height:1.7;margin-top:10px}
+footer{text-align:center;color:#aaa;font-size:12px;margin:18px 0 8px}
+@media(max-width:560px){.cards{grid-template-columns:1fr 1fr}.card .big{font-size:19px}}
+</style>
+</head>
+<body>
+<h1>VOO / QQQM 定投跟踪</h1>
+<div class="sub">每周六更新（中国时间） · 数据截至 <span id="upd"></span> · 投入为IBKR实际成交</div>
+
+<div class="cards">
+  <div class="card"><h2>VOO <span style="color:#888;font-weight:400;font-size:12px">标普500</span></h2>
+    <div class="big" id="voo-r"></div>
+    <div class="kv"><span>累计投入</span><b id="voo-c"></b></div>
+    <div class="kv"><span>当前市值</span><b id="voo-v"></b></div>
+    <div class="kv"><span>利润</span><b id="voo-p"></b></div>
+  </div>
+  <div class="card"><h2>QQQM <span style="color:#888;font-weight:400;font-size:12px">纳斯达克100</span></h2>
+    <div class="big" id="qqqm-r"></div>
+    <div class="kv"><span>累计投入</span><b id="qqqm-c"></b></div>
+    <div class="kv"><span>当前市值</span><b id="qqqm-v"></b></div>
+    <div class="kv"><span>利润</span><b id="qqqm-p"></b></div>
+  </div>
+</div>
+
+<section><h3>VOO：累计投入 vs 市值</h3><canvas id="ch-voo-v"></canvas></section>
+<section><h3>VOO：收益率</h3><canvas id="ch-voo-r"></canvas>
+<details><summary>查看 VOO 每周明细</summary><div class="wrap"><table id="tb-voo"></table></div></details></section>
+
+<section><h3>QQQM：累计投入 vs 市值</h3><canvas id="ch-qq-v"></canvas></section>
+<section><h3>QQQM：收益率</h3><canvas id="ch-qq-r"></canvas>
+<details><summary>查看 QQQM 每周明细</summary><div class="wrap"><table id="tb-qq"></table></div></details></section>
+
+<section><h3>导出数据</h3>
+<button class="btn" onclick="dl('voo')">下载 VOO 明细 (CSV)</button>
+<button class="btn" onclick="dl('qqqm')">下载 QQQM 明细 (CSV)</button>
+<div class="note">
+数据来源：投入/股数为 IBKR 账户实际成交记录；价格为每周五美股收盘价。<br>
+口径：利润 = 市值 − 累计投入 + 累计分红；收益率 = 利润 ÷ 累计投入。<br>
+VOO 含 2026-04-01 手动买入底仓（$1,336.22）；QQQM 无定投前持仓。SPY 不在统计内。<br>
+本页面仅为个人记账，不构成投资建议。
+</div></section>
+<footer>voo-qqqm-dca · private</footer>
+
+<script>
+const DATA = {"updated": "2026-10-10", "voo": {"ticker": "VOO", "basis": {"q": 2.22, "c": 1336.22}, "rows": [{"d": "2026-05-23", "w": 100.97, "c": 1437.19, "q": 2.3675, "p": 685.55, "v": 1623.04, "div": 0.0, "pf": 185.85, "r": 0.1293}, {"d": "2026-05-30", "w": 101.0, "c": 1538.19, "q": 2.5125, "p": 695.49, "v": 1747.42, "div": 0.0, "pf": 209.23, "r": 0.136}, {"d": "2026-06-06", "w": 100.95, "c": 1639.14, "q": 2.6561, "p": 678, "v": 1800.84, "div": 0.0, "pf": 161.69, "r": 0.0986}, {"d": "2026-06-13", "w": 101.0, "c": 1740.14, "q": 2.8027, "p": 681.95, "v": 1911.3, "div": 0.0, "pf": 171.16, "r": 0.0984}, {"d": "2026-06-20", "w": 100.95, "c": 1841.09, "q": 2.9468, "p": 688.11, "v": 2027.72, "div": 0.0, "pf": 186.63, "r": 0.1014}, {"d": "2026-06-27", "w": 100.94, "c": 1942.04, "q": 3.0922, "p": 670.26, "v": 2072.58, "div": 0.0, "pf": 130.54, "r": 0.0672}, {"d": "2026-07-04", "w": 100.99, "c": 2043.02, "q": 3.2396, "p": 684.84, "v": 2218.61, "div": 0.0, "pf": 175.58, "r": 0.0859}, {"d": "2026-07-11", "w": 100.96, "c": 2143.98, "q": 3.3845, "p": 693.86, "v": 2348.37, "div": 0.0, "pf": 204.39, "r": 0.0953}, {"d": "2026-07-18", "w": 100.97, "c": 2244.95, "q": 3.5293, "p": 683.17, "v": 2411.11, "div": 0.0, "pf": 166.16, "r": 0.074}, {"d": "2026-07-25", "w": 100.96, "c": 2345.91, "q": 3.6753, "p": 679.14, "v": 2496.04, "div": 0.0, "pf": 150.13, "r": 0.064}, {"d": "2026-08-01", "w": 100.98, "c": 2446.9, "q": 3.8223, "p": 686.65, "v": 2624.58, "div": 0.0, "pf": 177.68, "r": 0.0726}, {"d": "2026-08-08", "w": 150.98, "c": 2597.88, "q": 4.0384, "p": 710.71, "v": 2870.13, "div": 0.0, "pf": 272.25, "r": 0.1048}, {"d": "2026-08-15", "w": 0.0, "c": 2597.88, "q": 4.0384, "p": 713.61, "v": 2881.84, "div": 0.0, "pf": 283.96, "r": 0.1093}, {"d": "2026-08-22", "w": 0.0, "c": 2597.88, "q": 4.0384, "p": 703.71, "v": 2841.86, "div": 0.0, "pf": 243.98, "r": 0.0939}, {"d": "2026-08-29", "w": 0.0, "c": 2597.88, "q": 4.0384, "p": 707.24, "v": 2856.12, "div": 0.0, "pf": 258.24, "r": 0.0994}, {"d": "2026-09-05", "w": 0.0, "c": 2597.88, "q": 4.0384, "p": 708.01, "v": 2859.23, "div": 0.0, "pf": 261.35, "r": 0.1006}, {"d": "2026-09-12", "w": 601.88, "c": 3199.76, "q": 4.8897, "p": 702.56, "v": 3435.31, "div": 0.0, "pf": 235.54, "r": 0.0736}, {"d": "2026-09-19", "w": 101.0, "c": 3300.76, "q": 5.033, "p": 701.78, "v": 3532.06, "div": 0.0, "pf": 231.3, "r": 0.0701}, {"d": "2026-09-26", "w": 100.99, "c": 3401.75, "q": 5.1741, "p": 710.79, "v": 3677.7, "div": 0.0, "pf": 275.95, "r": 0.0811}, {"d": "2026-10-03", "w": 100.97, "c": 3502.72, "q": 5.3158, "p": 707.54, "v": 3761.14, "div": 0.94, "pf": 259.36, "r": 0.074}, {"d": "2026-10-10", "w": 0.0, "c": 3502.72, "q": 5.3158, "p": 715.59, "v": 3803.93, "div": 0.94, "pf": 302.15, "r": 0.0863}]}, "qqqm": {"ticker": "QQQM", "basis": {"q": 0.0, "c": 0.0}, "rows": [{"d": "2026-05-23", "w": 101.0, "c": 101.0, "q": 0.3444, "p": 295.44, "v": 101.75, "div": 0.0, "pf": 0.75, "r": 0.0075}, {"d": "2026-05-30", "w": 100.98, "c": 201.98, "q": 0.6777, "p": 303.96, "v": 205.99, "div": 0.0, "pf": 4.02, "r": 0.0199}, {"d": "2026-06-06", "w": 100.99, "c": 302.96, "q": 1.0054, "p": 290.35, "v": 291.92, "div": 0.0, "pf": -11.05, "r": -0.0365}, {"d": "2026-06-13", "w": 100.99, "c": 403.95, "q": 1.3437, "p": 297.01, "v": 399.09, "div": 0.0, "pf": -4.86, "r": -0.012}, {"d": "2026-06-20", "w": 100.99, "c": 504.94, "q": 1.6708, "p": 304.52, "v": 508.79, "div": 0.0, "pf": 3.85, "r": 0.0076}, {"d": "2026-06-27", "w": 100.98, "c": 605.92, "q": 1.9997, "p": 290.95, "v": 581.81, "div": 0.0, "pf": -24.11, "r": -0.0398}, {"d": "2026-07-04", "w": 100.97, "c": 706.89, "q": 2.3376, "p": 293.42, "v": 685.9, "div": 0.0, "pf": -20.99, "r": -0.0297}, {"d": "2026-07-11", "w": 100.98, "c": 807.87, "q": 2.6732, "p": 298.72, "v": 798.54, "div": 0.0, "pf": -9.33, "r": -0.0116}, {"d": "2026-07-18", "w": 101.0, "c": 908.87, "q": 3.0133, "p": 286.31, "v": 862.74, "div": 0.0, "pf": -46.13, "r": -0.0508}, {"d": "2026-07-25", "w": 100.97, "c": 1009.84, "q": 3.36, "p": 281.68, "v": 946.44, "div": 0.0, "pf": -63.4, "r": -0.0628}, {"d": "2026-08-01", "w": 101.0, "c": 1110.84, "q": 3.7199, "p": 283.29, "v": 1053.81, "div": 0.0, "pf": -57.03, "r": -0.0513}, {"d": "2026-08-08", "w": 150.98, "c": 1261.83, "q": 4.2435, "p": 297.7, "v": 1263.29, "div": 0.0, "pf": 1.46, "r": 0.0012}, {"d": "2026-08-15", "w": 0.0, "c": 1261.83, "q": 4.2435, "p": 301.01, "v": 1277.34, "div": 0.0, "pf": 15.51, "r": 0.0123}, {"d": "2026-08-22", "w": 0.0, "c": 1261.83, "q": 4.2435, "p": 293.76, "v": 1246.57, "div": 0.0, "pf": -15.26, "r": -0.0121}, {"d": "2026-08-29", "w": 0.0, "c": 1261.83, "q": 4.2435, "p": 295, "v": 1251.83, "div": 0.0, "pf": -9.99, "r": -0.0079}, {"d": "2026-09-05", "w": 0.0, "c": 1261.83, "q": 4.2435, "p": 296.07, "v": 1256.37, "div": 0.0, "pf": -5.45, "r": -0.0043}, {"d": "2026-09-12", "w": 601.98, "c": 1863.81, "q": 6.2713, "p": 294.39, "v": 1846.21, "div": 0.0, "pf": -17.6, "r": -0.0094}, {"d": "2026-09-19", "w": 100.98, "c": 1964.78, "q": 6.6139, "p": 296.91, "v": 1963.73, "div": 0.0, "pf": -1.05, "r": -0.0005}, {"d": "2026-09-26", "w": 100.99, "c": 2065.78, "q": 6.9416, "p": 306.54, "v": 2127.88, "div": 0.0, "pf": 62.1, "r": 0.0301}, {"d": "2026-10-03", "w": 100.98, "c": 2166.76, "q": 7.2683, "p": 308.69, "v": 2243.65, "div": 0.0, "pf": 76.89, "r": 0.0355}, {"d": "2026-10-10", "w": 0.0, "c": 2166.76, "q": 7.2683, "p": 309.39, "v": 2248.74, "div": 0.0, "pf": 81.98, "r": 0.0378}]}};
+document.getElementById('upd').textContent = DATA.updated;
+const fmt$ = x => '$' + x.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtP = x => (x>=0?'+':'') + (x*100).toFixed(2) + '%';
+function fill(id, t){
+  const r = t.rows[t.rows.length-1];
+  document.getElementById(id+'-r').textContent = fmtP(r.r);
+  document.getElementById(id+'-r').className = 'big ' + (r.r>=0?'up':'down');
+  document.getElementById(id+'-c').textContent = fmt$(r.c);
+  document.getElementById(id+'-v').textContent = fmt$(r.v);
+  const pe = document.getElementById(id+'-p');
+  pe.textContent = (r.pf>=0?'+':'−') + fmt$(Math.abs(r.pf)).slice(0);
+  pe.className = r.pf>=0?'up':'down';
+}
+fill('voo', DATA.voo); fill('qqqm', DATA.qqqm);
+function line(id, labels, ds){
+  new Chart(document.getElementById(id), {type:'line',
+    data:{labels, datasets:ds},
+    options:{responsive:true, interaction:{mode:'index',intersect:false},
+      plugins:{legend:{position:'top',labels:{boxWidth:12,font:{size:11}}}},
+      scales:{x:{ticks:{maxTicksLimit:6,font:{size:10}}},y:{ticks:{font:{size:10}}}}}});
+}
+const L1 = DATA.voo.rows.map(r=>r.d.slice(5)), L2 = DATA.qqqm.rows.map(r=>r.d.slice(5));
+line('ch-voo-v', L1, [
+  {label:'累计投入$', data:DATA.voo.rows.map(r=>r.c), borderColor:'#4472C4', borderWidth:2, pointRadius:0},
+  {label:'市值$', data:DATA.voo.rows.map(r=>r.v), borderColor:'#ED7D31', borderWidth:2, pointRadius:0}]);
+line('ch-voo-r', L1, [{label:'收益率', data:DATA.voo.rows.map(r=>+(r.r*100).toFixed(2)), borderColor:'#70AD47', borderWidth:2, pointRadius:0, tension:.3}]);
+line('ch-qq-v', L2, [
+  {label:'累计投入$', data:DATA.qqqm.rows.map(r=>r.c), borderColor:'#4472C4', borderWidth:2, pointRadius:0},
+  {label:'市值$', data:DATA.qqqm.rows.map(r=>r.v), borderColor:'#ED7D31', borderWidth:2, pointRadius:0}]);
+line('ch-qq-r', L2, [{label:'收益率', data:DATA.qqqm.rows.map(r=>+(r.r*100).toFixed(2)), borderColor:'#70AD47', borderWidth:2, pointRadius:0, tension:.3}]);
+function table(id, t){
+  const el = document.getElementById(id);
+  let h = '<tr><th>周六</th><th>本周投入$</th><th>累计投入$</th><th>股数</th><th>收盘价$</th><th>市值$</th><th>利润$</th><th>收益率</th></tr>';
+  t.rows.forEach(r=>{ h += `<tr><td>${r.d}</td><td>${r.w.toFixed(2)}</td><td>${r.c.toFixed(2)}</td><td>${r.q}</td><td>${r.p.toFixed(2)}</td><td>${r.v.toFixed(2)}</td><td>${r.pf.toFixed(2)}</td><td>${fmtP(r.r)}</td></tr>`; });
+  el.innerHTML = h;
+}
+table('tb-voo', DATA.voo); table('tb-qq', DATA.qqqm);
+function dl(which){
+  const t = DATA[which];
+  let csv = '日期,本周投入$,累计投入$,股数,收盘价$,市值$,累计分红$,利润$,收益率\n';
+  t.rows.forEach(r=>{ csv += [r.d, r.w.toFixed(2), r.c.toFixed(2), r.q, r.p.toFixed(2), r.v.toFixed(2), r.div.toFixed(2), r.pf.toFixed(2), (r.r*100).toFixed(2)+'%'].join(',') + '\n'; });
+  const blob = new Blob(['\ufeff' + csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = t.ticker + '_dca_weekly.csv';
+  a.click();
+}
+</script>
+</body>
+</html>
